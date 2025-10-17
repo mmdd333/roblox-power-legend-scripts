@@ -1,1 +1,188 @@
+-- 力量传奇主增强脚本
+local PowerLegend = {}
+
+PowerLegend.Config = {
+    AutoTrain = true,
+    AutoCollect = true,
+    TrainSpeed = 1
+}
+
+function PowerLegend:Init()
+    self:CreateUI()
+    self:SetupAutoFeatures()
+    print("力量传奇增强已加载!")
+end
+
+function PowerLegend:CreateUI()
+    local player = game:GetService("Players").LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "PowerLegendEnhance"
+    screenGui.Parent = playerGui
+    
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 250, 0, 200)
+    mainFrame.Position = UDim2.new(0, 10, 0, 10)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    mainFrame.Parent = screenGui
+    
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.Text = "💪 力量传奇增强"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+    title.Parent = mainFrame
+    
+    self.UI = screenGui
+end
+
+function PowerLegend:SetupAutoFeatures()
+    spawn(function()
+        while true do
+            if PowerLegend.Config.AutoTrain then
+                self:AutoTrain()
+            end
+            wait(1 / PowerLegend.Config.TrainSpeed)
+        end
+    end)
+end
+
+function PowerLegend:AutoTrain()
+    -- 自动训练逻辑
+    local trainButtons = {"TrainButton", "LiftButton"}
+    for _, btnName in pairs(trainButtons) do
+        self:ClickButton(btnName)
+    end
+end
+
+function PowerLegend:ClickButton(buttonName)
+    local gui = game:GetService("Players").LocalPlayer.PlayerGui
+    local button = self:FindButton(gui, buttonName)
+    if button then
+        button:FireServer("Click")
+        return true
+    end
+    return false
+end
+
+function PowerLegend:FindButton(parent, name)
+    for _, child in pairs(parent:GetDescendants()) do
+        if child.Name == name and child:IsA("TextButton") then
+            return child
+        end
+    end
+    return nil
+end
+
+-- 启动脚本
+PowerLegend:Init()
+return PowerLegend
+-- 自动重生脚本
+local AutoRebirth = {
+    Enabled = false,
+    RebirthThreshold = 1000
+}
+
+function AutoRebirth:CheckRebirth()
+    if not self.Enabled then return end
+    
+    local currency = self:GetCurrency()
+    if currency >= self.RebirthThreshold then
+        self:PerformRebirth()
+    end
+end
+
+function AutoRebirth:GetCurrency()
+    local stats = game.Players.LocalPlayer:FindFirstChild("leaderstats")
+    if stats then
+        local money = stats:FindFirstChild("Money") or stats:FindFirstChild("Coins")
+        return money and money.Value or 0
+    end
+    return 0
+end
+
+function AutoRebirth:PerformRebirth()
+    local rebirthButtons = {"RebirthButton", "PrestigeButton"}
+    for _, btnName in pairs(rebirthButtons) do
+        local button = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild(btnName, true)
+        if button then
+            button:FireServer("Click")
+            print("自动重生执行")
+            break
+        end
+    end
+end
+
+-- 自动检查循环
+spawn(function()
+    while true do
+        AutoRebirth:CheckRebirth()
+        wait(10)
+    end
+end)
+
+return AutoRebirth
+-- 游戏数据监控脚本
+local GameStats = {}
+
+function GameStats:CreateStatsPanel()
+    local player = game:GetService("Players").LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
+    
+    local statsGui = Instance.new("ScreenGui")
+    statsGui.Name = "GameStatsMonitor"
+    statsGui.Parent = playerGui
+    
+    local statsFrame = Instance.new("Frame")
+    statsFrame.Size = UDim2.new(0, 200, 0, 120)
+    statsFrame.Position = UDim2.new(1, -210, 0, 10)
+    statsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    statsFrame.Parent = statsGui
+    
+    self.statsLabel = Instance.new("TextLabel")
+    self.statsLabel.Size = UDim2.new(1, -10, 1, -10)
+    self.statsLabel.Position = UDim2.new(0, 5, 0, 5)
+    self.statsLabel.BackgroundTransparency = 1
+    self.statsLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+    self.statsLabel.Text = "统计加载中..."
+    self.statsLabel.TextSize = 12
+    self.statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+    self.statsLabel.TextYAlignment = Enum.TextYAlignment.Top
+    self.statsLabel.Parent = statsFrame
+    
+    self:StartMonitoring()
+end
+
+function GameStats:StartMonitoring()
+    spawn(function()
+        while true do
+            self:UpdateStats()
+            wait(2)
+        end
+    end)
+end
+
+function GameStats:UpdateStats()
+    local statsText = "📊 游戏统计:\n"
+    
+    local player = game.Players.LocalPlayer
+    local leaderstats = player:FindFirstChild("leaderstats")
+    
+    if leaderstats then
+        for _, stat in pairs(leaderstats:GetChildren()) do
+            if stat:IsA("IntValue") or stat:IsA("NumberValue") then
+                statsText = statsText .. stat.Name .. ": " .. stat.Value .. "\n"
+            end
+        end
+    end
+    
+    if self.statsLabel then
+        self.statsLabel.Text = statsText
+    end
+end
+
+-- 启动统计监控
+GameStats:CreateStatsPanel()
+return GameStats
 
